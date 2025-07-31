@@ -56,3 +56,19 @@ Show dynamic weather icons for a more modern UI.
 🔹 License
 This project is open-source and free to use for educational purposes.
  
+
+ ## Screenshots
+
+### 1. Landing Page
+![Landing Page](assets/screenshots/mobile%20design.png)
+
+### 2. Weather Results
+![Weather Results](assets/screenshots/mobile%20design2.png)
+
+### 3. 3‑Day Temperature Chart
+![Temperature Chart](assets/screenshots/Screenshot%202025-07-31%20163307.png)
+
+### 4. 3‑Day Temperature Chart
+![Temperature Chart](assets/screenshots/Screenshot%202025-07-31%20163327.png)
+
+
