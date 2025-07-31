@@ -1,60 +1,128 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App </title>
+    <title>Weather App</title>
     <link rel="stylesheet" href="/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <h1>Welcome to the Weather App</h1>
     <p>Check the weather in your area!</p>
+
     <form id="weatherForm">
         <label for="city">Enter City:</label>
         <input type="text" id="city" name="city" required>
         <button type="submit">Get Weather</button>
     </form>
 
-    
     <div id="weatherResult" class="weather-card hidden"></div>
+
+    <!-- Chart Container -->
+    <div class="weather-card hidden" id="chartCard">
+        <h3>3‑Day Temperature Trend</h3>
+        <canvas id="forecastChart"></canvas>
+    </div>
+
     <script>
+        const weatherResult = document.getElementById('weatherResult');
+        const chartCard = document.getElementById('chartCard');
+        const API_KEY = "e0abebb17d2c32c3b6f831a490e234cd";
+        let forecastChart;
+
+        // Load cached weather on page load
+        window.addEventListener('load', () => {
+            const cached = localStorage.getItem('lastWeather');
+            if (cached) displayWeather(JSON.parse(cached));
+        });
+
         document.getElementById('weatherForm').addEventListener('submit', function(event) {
             event.preventDefault();
             const city = document.getElementById('city').value;
-            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=e0abebb17d2c32c3b6f831a490e234cd&units=metric`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.cod === 200) {
-                        const weatherInfo = `
-                           <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="${data.weather[0].description}">
-
-                            <h2>Weather in ${data.name}</h2>
-                            <p>Temperature: ${data.main.temp} °C</p>
-                            <p>Condition: ${data.weather[0].description}</p>
-
-                            <div class="details-grid">
-                            <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
-                            <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
-                            <p><strong>Pressure:</strong> ${data.main.pressure} hPa</p>
-                            <p><strong>Visibility:</strong> ${data.visibility / 1000} km</p>
-                            <p><strong>Cloudiness:</strong> ${data.clouds.all}%</p>
-                            <p><strong>Sunrise:</strong> ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}</p>
-                            <p><strong>Sunset:</strong> ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}</p>
-                            </div>
-                            
-                        `;
-                        document.getElementById('weatherResult').innerHTML = weatherInfo;
-                        document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
-                    } else {
-                        document.getElementById('weatherResult').innerHTML = `<p>Error: ${data.message}</p>`;
-                        document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
-                    }
-                })
-                .catch(error => {
-                    document.getElementById('weatherResult').innerHTML = `<p>Error fetching weather data.</p>`;
-                    document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
-                });
+            getWeather(city);
         });
+
+        async function getWeather(city) {
+            try {
+                const currentRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`);
+                const currentData = await currentRes.json();
+
+                if (currentData.cod !== 200) {
+                    weatherResult.innerHTML = `<p>Error: ${currentData.message}</p>`;
+                    weatherResult.classList.add('show');
+                    return;
+                }
+
+                // Cache latest data
+                localStorage.setItem('lastWeather', JSON.stringify(currentData));
+                displayWeather(currentData);
+
+                // Fetch forecast for chart
+                const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${API_KEY}&units=metric`);
+                const forecastData = await forecastRes.json();
+                displayForecastChart(forecastData);
+
+            } catch {
+                weatherResult.innerHTML = `<p>Error fetching weather data.</p>`;
+                weatherResult.classList.add('show');
+            }
+        }
+
+        function displayWeather(data) {
+            const weatherInfo = `
+                <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="${data.weather[0].description}">
+                <h2>Weather in ${data.name}</h2>
+                <p>Temperature: ${data.main.temp} °C</p>
+                <p>Condition: ${data.weather[0].description}</p>
+
+                <div class="details-grid">
+                    <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+                    <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                    <p><strong>Pressure:</strong> ${data.main.pressure} hPa</p>
+                    <p><strong>Visibility:</strong> ${data.visibility / 1000} km</p>
+                    <p><strong>Cloudiness:</strong> ${data.clouds.all}%</p>
+                    <p><strong>Sunrise:</strong> ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}</p>
+                    <p><strong>Sunset:</strong> ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}</p>
+                </div>
+            `;
+            weatherResult.innerHTML = weatherInfo;
+            weatherResult.classList.add('show');
+        }
+
+        function displayForecastChart(forecastData) {
+            // Extract next 3 days (one per day at 12:00)
+            const dailyData = forecastData.list.filter(item => item.dt_txt.includes("12:00:00")).slice(0, 3);
+            const labels = dailyData.map(item => new Date(item.dt_txt).toLocaleDateString());
+            const temps = dailyData.map(item => item.main.temp);
+
+            if (forecastChart) forecastChart.destroy(); // Reset old chart
+
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Temp °C',
+                        data: temps,
+                        borderColor: '#0077b6',
+                        backgroundColor: 'rgba(0,119,182,0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            chartCard.classList.add('show');
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(() => console.log('Service Worker Registered'));
+        }
     </script>
 </body>
 </html>

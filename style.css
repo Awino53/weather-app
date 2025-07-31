@@ -1,4 +1,4 @@
-/* General Page Styles */
+ /* General Page Styles */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(to bottom, #87ceeb, #f0f8ff);
@@ -57,29 +57,29 @@ button:hover {
     background-color: #023e8a;
 }
 
-/* Weather Card */
-.weather-card {
-    background:  #71a4c0;
+/* Weather & Chart Cards */
+.weather-card,
+#chartCard {
+    background: #71a4c0;
     padding: 20px;
     margin-top: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     transition: 0.3s;
-    display: none;
-
+    display: none; /* Hidden by default */
 }
 
-.weather-card.show {
+.weather-card.show,
+#chartCard.show {
     display: block; /* Show when class 'show' is added */
 }
 
- 
-
-
+/* Weather icon */
 .weather-card img {
     width: 100px;
 }
 
+/* Error message */
 .error {
     color: red;
     font-weight: bold;
@@ -100,8 +100,16 @@ button:hover {
     font-size: 0.9rem;
     text-align: center;
 }
- 
 
+/* Chart Canvas Styling */
+#forecastChart {
+    width: 100% !important;
+    height: 250px !important;
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+}
 
 /* Responsive Design */
 @media (max-width: 600px) {
@@ -117,7 +125,13 @@ button:hover {
         width: 100%;
     }
 
-    .weather-card {
+    .weather-card,
+    #chartCard {
         font-size: 0.95rem;
+        padding: 15px;
+    }
+
+    #forecastChart {
+        height: 200px !important;
     }
 }
