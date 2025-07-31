@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App </title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <h1>Welcome to the Weather App</h1>
+    <p>Check the weather in your area!</p>
+    <form id="weatherForm">
+        <label for="city">Enter City:</label>
+        <input type="text" id="city" name="city" required>
+        <button type="submit">Get Weather</button>
+    </form>
+
+    
+    <div id="weatherResult" class="weather-card hidden"></div>
+    <script>
+        document.getElementById('weatherForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const city = document.getElementById('city').value;
+            fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=e0abebb17d2c32c3b6f831a490e234cd&units=metric`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.cod === 200) {
+                        const weatherInfo = `
+                           <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png" alt="${data.weather[0].description}">
+
+                            <h2>Weather in ${data.name}</h2>
+                            <p>Temperature: ${data.main.temp} °C</p>
+                            <p>Condition: ${data.weather[0].description}</p>
+
+                            <div class="details-grid">
+                            <p><strong>Wind Speed:</strong> ${data.wind.speed} m/s</p>
+                            <p><strong>Humidity:</strong> ${data.main.humidity}%</p>
+                            <p><strong>Pressure:</strong> ${data.main.pressure} hPa</p>
+                            <p><strong>Visibility:</strong> ${data.visibility / 1000} km</p>
+                            <p><strong>Cloudiness:</strong> ${data.clouds.all}%</p>
+                            <p><strong>Sunrise:</strong> ${new Date(data.sys.sunrise * 1000).toLocaleTimeString()}</p>
+                            <p><strong>Sunset:</strong> ${new Date(data.sys.sunset * 1000).toLocaleTimeString()}</p>
+                            </div>
+                            
+                        `;
+                        document.getElementById('weatherResult').innerHTML = weatherInfo;
+                        document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
+                    } else {
+                        document.getElementById('weatherResult').innerHTML = `<p>Error: ${data.message}</p>`;
+                        document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('weatherResult').innerHTML = `<p>Error fetching weather data.</p>`;
+                    document.getElementById('weatherResult').classList.add('show'); // 🔹 Makes the card visible
+                });
+        });
+    </script>
+</body>
+</html>
