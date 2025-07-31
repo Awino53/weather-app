@@ -14,6 +14,9 @@ This project was built for the **EldoHub Mentorship Program Project Challenge**.
 - **Dynamic Data Fetching**: Fetches real-time weather data from OpenWeatherMap API.
 - **Interactive Search**: Users can search for any city to get the current weather.
 - **Responsive Design**: Optimized for both desktop and mobile devices.
+- **Offline Support via Service Worker**
+- **Data Visualization using Chart.js**
+
 - **Weather Details**:
   - Temperature in °C  
   - Weather description  
